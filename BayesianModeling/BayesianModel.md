@@ -152,8 +152,8 @@ S.aTimbre    = grpstats(dPrimeEdgeCorrected,TimbreFactor,'mean')-S.a0;
 S.aAttentionaTimbre = zeros(nAttentionCond,NumTimbreDists);
 for idAtt = 1:nAttentionCond
     for idTimbre = 1:NumTimbreDists
-        S.aAttentionaTimbre(idAtt,idTimbre) = mean(dPrimeEdgeCorrected(attentionFactor==idAtt & TimbreFactor == idTimbre)) -...
-        S.aAttention(idAtt)*S.aTimbre(idTimbre) - S.a0;
+        S.aAttentionaTimbre(idAtt,idTimbre) = mean(dPrimeEdgeCorrected(attentionFactor==idAtt & ...
+        TimbreFactor == idTimbre)) - S.aAttention(idAtt)*S.aTimbre(idTimbre) - S.a0;
     end
 end
 
@@ -184,8 +184,10 @@ model {
 		d[m]   ~ dnorm(mu_d[m],tau_d[attentionFactor[m]])
 		c[m]   ~ dnorm(mu_c[m],tau_c[attentionFactor[m]])
 
-        mu_d[m] <- a0 + aAttention[attentionFactor[m]] + aTimbre[TimbreFactor[m]] + aAttentionaTimbre[attentionFactor[m],TimbreFactor[m]] + aS[subjectFactor[m]]
-        mu_c[m] <- c0 + cAttention[attentionFactor[m]] + cTimbre[TimbreFactor[m]] + cAttentioncTimbre[attentionFactor[m],TimbreFactor[m]] + cS[subjectFactor[m]]
+        mu_d[m] <- a0 + aAttention[attentionFactor[m]] + aTimbre[TimbreFactor[m]] + ...
+        aAttentionaTimbre[attentionFactor[m],TimbreFactor[m]] + aS[subjectFactor[m]]
+        mu_c[m] <- c0 + cAttention[attentionFactor[m]] + cTimbre[TimbreFactor[m]] + ...
+        cAttentioncTimbre[attentionFactor[m],TimbreFactor[m]] + cS[subjectFactor[m]]
 
     }
 
