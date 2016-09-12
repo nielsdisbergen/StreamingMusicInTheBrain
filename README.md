@@ -3,4 +3,4 @@
 This repository contains files related to publications from Niels R. Disbergen on Auditory Scene Analysis with Music
 
 Index
-- Description of [Bayesian Model](.../blob/master/BayesianModeling/BayesianModel.md)
+- Description of [Bayesian Model](https://github.com/nielsdisbergen/StreamingMusicInTheBrain/tree/master/BayesianModeling/BayesianModel.md)
