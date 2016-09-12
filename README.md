@@ -1,3 +1,6 @@
-# StreamingMusicInTheBrain
+# Streaming Music In The Brain
 
-This repository containes files related to publications on Auditory Scene Analysis with Music
+This repository contains files related to publications from Niels R. Disbergen on Auditory Scene Analysis with Music
+
+Index
+- Description of [Bayesian Model](https://github.com/nielsdisbergen/StreamingMusicInTheBrain/BayesianModeling)
