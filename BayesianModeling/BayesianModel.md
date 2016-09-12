@@ -20,7 +20,7 @@ trialsTriplet   = hits + misses;
 trialsNoTriplet = falseAlarms + correctRejections;
 
 dPrimeEdgeCorrected  = norminv((hits+.5)./(trialsTriplet+1)) - norminv((falseAlarms+.5)./(trialsNoTriplet+1));
-biasEdgeCorrected    = -1/2*norminv((hits+.5)./(trialsTriplet+1)) - norminv((falseAlarms+.5)./(trialsNoTriplet+1));
+biasEdgeCorrected = -1/2*norminv((hits+.5)./(trialsTriplet+1)) - norminv((falseAlarms+.5)./(trialsNoTriplet+1));
 
 
 ```
