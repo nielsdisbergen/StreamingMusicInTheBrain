@@ -1,4 +1,4 @@
-### Bayesian modeling specifications for "Modulating top-down and bottom-up contributions to auditory stream segregation and integration with polyphonic music" by Niels R. Disbergen, Giancarlo Valente, Merle-Marie Ahrens, Elia Formisano, and Robert Zatorre ###
+### Bayesian modeling specifications for "Assessing top-down and bottom-up contributions to auditory stream segregation and integration with polyphonic music" by Niels R. Disbergen, Giancarlo Valente, Elia Formisano, and Robert Zatorre ###
 
 This documents is a supplement to the paper (forthcoming) and describes in more detail how the Bayesian model is implemented for the analysis of behavioral data. More general description and details as to why the model has been implemented this way can be found in the paper, a simplified DAG description of the model is presented below.
 
