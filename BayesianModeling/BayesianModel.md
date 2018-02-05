@@ -13,14 +13,14 @@ For more information, see also "[Doing Bayesian Data Analysis](https://sites.goo
 
 
 ### Signal Detection Values ###
-D-prime & bias values employed for *model initiation only*
+D-prime & bias values were edge-corrected and employed for *model initiation only*
 ```matlab
 
-trialsTriplet   = hits + misses;
-trialsNoTriplet = falseAlarms + correctRejections;
+trialsTriplet = nHits + nMiss;
+trialsNoTriplet = nFalseAlarms + nCorrReject;
 
-dPrimeEdgeCorrected  = norminv((hits+.5)./(trialsTriplet+1)) - norminv((falseAlarms+.5)./(trialsNoTriplet+1));
-biasEdgeCorrected = -1/2*norminv((hits+.5)./(trialsTriplet+1)) - norminv((falseAlarms+.5)./(trialsNoTriplet+1));
+dPrimeEdgeCorrected  = norminv((nHits + .5) ./ (trialsTriplet + 1)) - norminv((nFalseAlarms + .5) ./ (trialsNoTriplet + 1));
+biasEdgeCorrected = -1/2 * norminv((nHits + .5) ./ (trialsTriplet + 1)) - norminv((nFalseAlarms + .5) ./ (trialsNoTriplet + 1));
 
 
 ```
@@ -30,14 +30,14 @@ biasEdgeCorrected = -1/2*norminv((hits+.5)./(trialsTriplet+1)) - norminv((falseA
 ### JAGS Model Parameters
 ```matlab
 
-jagsMonitorParams = {'d','c','mu_d','mu_c','tau_c','tau_d',...
-                'a0','aAttention','aS','a1SD','aSSD',...
-                'c0','cAttention','cS','c1SD','cSSD'};
+jagsMonitorParams = {'d', 'c', 'mu_d', 'mu_c', 'tau_c', 'tau_d', ...
+                'a0', 'aAttention', 'aS', 'a1SD', 'aSSD', ...
+                'c0', 'cAttention', 'cS', 'c1SD', 'cSSD'};
 
-JagsParams = struct('nMeasures',nMeasures,'hits',hits,'falseAlarms',falseAlarms,...
-            'trialsTriplet',trialsTriplet,'trialsNoTriplet', trialsNoTriplet,...
-            'attentionFactor',attentionFactor,'subjectFactor',subjectFactor,...
-            'nAttentionCond',nAttentionCond,'nSubjects',nSubjects);
+JagsParams = struct('nMeasures', nMeasures, 'nHits', nHits, 'nFalseAlarms', nFalseAlarms, ...
+            'trialsTriplet', trialsTriplet, 'trialsNoTriplet', trialsNoTriplet, ...
+            'attentionFactor', attentionFactor,'subjectFactor', subjectFactor, ...
+            'nAttentionCond', nAttentionCond, 'nSubjects', nSubjects);
 
 
 ```
@@ -45,12 +45,12 @@ JagsParams = struct('nMeasures',nMeasures,'hits',hits,'falseAlarms',falseAlarms,
 ### JAGS Model initialization values
 ```matlab
 
-S.a0         = mean(dPrimeEdgeCorrected);
-S.aS         = grpstats(dPrimeEdgeCorrected,subjectFactor,'mean')-S.a0;
-S.aSSDunabs  = std(S.aS);
-S.aAttention = grpstats(dPrimeEdgeCorrected,attentionFactor,'mean')-S.a0;
-S.sigma_d    = grpstats(dPrimeEdgeCorrected,subjectFactor,'std')/2;
-S.a1SDunabs  = std(S.aAttention);
+S.a0 = mean(dPrimeEdgeCorrected);
+S.aS = grpstats(dPrimeEdgeCorrected, subjectFactor, 'mean') - S.a0;
+S.aSSDunabs = std(S.aS);
+S.aAttention = grpstats(dPrimeEdgeCorrected, attentionFactor, 'mean') - S.a0;
+S.sigma_d = grpstats(dPrimeEdgeCorrected, subjectFactor,'std')/2;
+S.a1SDunabs = std(S.aAttention);
 
 mcmc_params.init0 = S;
 
@@ -65,14 +65,14 @@ model {
 
   for (m in 1:nMeasures) {
 
-		hits[m]         ~ dbinom(h[m],trialsTriplet[m])
-		falseAlarms[m]  ~ dbinom(f[m],trialsNoTriplet[m])
+		hits[m] ~ dbinom(h[m], trialsTriplet[m])
+		falseAlarms[m] ~ dbinom(f[m], trialsNoTriplet[m])
 
-		h[m]   <- phi(1/2*d[m] - c[m])
-		f[m]   <- phi(-1/2*d[m] - c[m])
+		h[m] <- phi(1/2*d[m] - c[m])
+		f[m] <- phi(-1/2*d[m] - c[m])
 
-		d[m]   ~ dnorm(mu_d[m],tau_d[attentionFactor[m]])
-		c[m]   ~ dnorm(mu_c[m],tau_c[attentionFactor[m]])
+		d[m] ~ dnorm(mu_d[m], tau_d[attentionFactor[m]])
+		c[m] ~ dnorm(mu_c[m], tau_c[attentionFactor[m]])
 
         mu_d[m] <- a0 + aAttention[attentionFactor[m]] + aS[subjectFactor[m]]
         mu_c[m] <- c0 + cAttention[attentionFactor[m]] + cS[subjectFactor[m]]
@@ -86,21 +86,21 @@ model {
     # factor Attention
 		for (jAtt in 1:NumAttCond) {
 
-			aAttention[jAtt] ~ dnorm( 0.0 , a1tau)
-			cAttention[jAtt] ~ dnorm( 0.0 , c1tau)
+			aAttention[jAtt] ~ dnorm(0.0 , a1tau)
+			cAttention[jAtt] ~ dnorm(0.0 , c1tau)
 
 			tau_d[jAtt] <- pow(sigma_d,-2)
 			tau_c[jAtt] <- pow(sigma_c,-2)
 		}
 
-		sigma_d ~ dunif(0,4)
-		sigma_c ~ dunif(0,4)
+		sigma_d ~ dunif(0, 4)
+		sigma_c ~ dunif(0, 4)
 
-		a1tau <- 1 / pow(a1SD, 2 )
-		a1SD ~ dgamma(1.64,.32)
+		a1tau <- 1 / pow(a1SD, 2)
+		a1SD ~ dgamma(1.64, .32)
 
 		c1tau <- 1 / pow(c1SD, 2)
-		c1SD ~ dgamma(1.64,.32)
+		c1SD ~ dgamma(1.64, .32)
 
 
     # factor Subject
@@ -114,7 +114,7 @@ model {
 		aSSD ~ dgamma(1.64, .32)
 
 		cStau <- 1 / pow(cSSD, 2)
-		cSSD~ dgamma(1.64, .32)
+		cSSD ~ dgamma(1.64, .32)
 
 
 }
@@ -127,14 +127,14 @@ Experiment 2 model is an extension of the Experiment 1 model, including the thre
 ### JAGS Model Parameters
 ```matlab
 
-jagsMonitorParams = {'d','c','mu_d','mu_c','tau_c','tau_d',...
-                'a0','aAttention','aTimbre','aAttentionaTimbre','aS','a1SD','a2SD','a1a2SD','aSSD',...
-                'c0','cAttention','cTimbre','cAttentioncTimbre','cS','c1SD','c2SD','c1c2SD','cSSD'};
+jagsMonitorParams = {'d', 'c', 'mu_d', 'mu_c', 'tau_c', 'tau_d', ...
+                'a0', 'aAttention', 'aTimbre', 'aAttentionaTimbre', 'aS', 'a1SD', 'a2SD', 'a1a2SD', 'aSSD', ...
+                'c0', 'cAttention', 'cTimbre','cAttentioncTimbre','cS', 'c1SD', 'c2SD', 'c1c2SD', 'cSSD'};
 
-JagsParams = struct('nMeasures',nMeasures,'hits',hits,'falseAlarms',falseAlarms,...
-        'trialsTriplet',trialsTriplet,'trialsNoTriplet',trialsNoTriplet,...
-        'attentionFactor',attentionFactor,'TimbreFactor',TimbreFactor,'subjectFactor',subjectFactor,...
-        'nAttentionCond',nAttentionCond,'NumTimbreDists',NumTimbreDists,'nSubjects', nSubjects);
+JagsParams = struct('nMeasures', nMeasures, 'nHits', nHits, 'nFalseAlarms', nFalseAlarms, ...
+        'trialsTriplet', trialsTriplet, 'trialsNoTriplet', trialsNoTriplet, ...
+        'attentionFactor', attentionFactor, 'timbreFactor', timbreFactor, 'subjectFactor', subjectFactor, ...
+        'nAttentionCond', nAttentionCond, 'nTimbreDists', nTimbreDists, 'nSubjects', nSubjects);
 
 
 ```
@@ -143,23 +143,23 @@ JagsParams = struct('nMeasures',nMeasures,'hits',hits,'falseAlarms',falseAlarms,
 Idem implementation for bias, only injection BiasEdgeCorrected instead of dPrimeEdgeCorrected
 ```matlab
 
-S.a0         = mean(dPrimeEdgeCorrected);
-S.aS         = grpstats(dPrimeEdgeCorrected,subjectFactor,'mean')-S.a0;
-S.aSSDunabs  = std(S.aS);
-S.aAttention = grpstats(dPrimeEdgeCorrected,attentionFactor,'mean')-S.a0;
-S.aTimbre    = grpstats(dPrimeEdgeCorrected,TimbreFactor,'mean')-S.a0;
+S.a0 = mean(dPrimeEdgeCorrected);
+S.aS = grpstats(dPrimeEdgeCorrected, subjectFactor,'mean') - S.a0;
+S.aSSDunabs = std(S.aS);
+S.aAttention = grpstats(dPrimeEdgeCorrected, attentionFactor, 'mean') - S.a0;
+S.aTimbre = grpstats(dPrimeEdgeCorrected, timbreFactor, 'mean') - S.a0;
 
-S.aAttentionaTimbre = zeros(nAttentionCond,NumTimbreDists);
+S.aAttentionaTimbre = zeros(nAttentionCond, nTimbreDists);
 for idAtt = 1:nAttentionCond
-    for idTimbre = 1:NumTimbreDists
-        S.aAttentionaTimbre(idAtt,idTimbre) = mean(dPrimeEdgeCorrected(attentionFactor==idAtt & ...
-            TimbreFactor == idTimbre)) - S.aAttention(idAtt)*S.aTimbre(idTimbre) - S.a0;
+    for idTimbre = 1:nTimbreDists
+        S.aAttentionaTimbre(idAtt, idTimbre) = mean(dPrimeEdgeCorrected(attentionFactor == idAtt & ...
+            timbreFactor == idTimbre)) - S.aAttention(idAtt) * S.aTimbre(idTimbre) - S.a0;
     end
 end
 
-S.sigma_d     = grpstats(dPrimeEdgeCorrected,subjectFactor,'std')/2;
-S.a1SDunabs   = std(S.aAttention);
-S.a2SDunabs   = std(S.aTimbre);
+S.sigma_d = grpstats(dPrimeEdgeCorrected, subjectFactor, 'std')/2;
+S.a1SDunabs = std(S.aAttention);
+S.a2SDunabs = std(S.aTimbre);
 S.a1a2SDunabs = std(S.aAttentionaTimbre);
 
 mcmc_params.init0 = S;
@@ -175,44 +175,45 @@ model {
 
   for (m in 1:nMeasures) {
 
-		hits[m]         ~ dbinom(h[m],trialsTriplet[m])
-		falseAlarms[m]  ~ dbinom(f[m],trialsNoTriplet[m])
+		hits[m] ~ dbinom(h[m],trialsTriplet[m])
+		falseAlarms[m] ~ dbinom(f[m],trialsNoTriplet[m])
 
-		h[m]   <- phi(1/2*d[m] - c[m])
-		f[m]   <- phi(-1/2*d[m] - c[m])
+		h[m] <- phi(1/2*d[m] - c[m])
+		f[m] <- phi(-1/2*d[m] - c[m])
 
-		d[m]   ~ dnorm(mu_d[m],tau_d[attentionFactor[m]])
-		c[m]   ~ dnorm(mu_c[m],tau_c[attentionFactor[m]])
+		d[m] ~ dnorm(mu_d[m], tau_d[attentionFactor[m]])
+		c[m] ~ dnorm(mu_c[m], tau_c[attentionFactor[m]])
 
         mu_d[m] <- a0 + aAttention[attentionFactor[m]] + aTimbre[TimbreFactor[m]] + ...
             aAttentionaTimbre[attentionFactor[m],TimbreFactor[m]] + aS[subjectFactor[m]]
+
         mu_c[m] <- c0 + cAttention[attentionFactor[m]] + cTimbre[TimbreFactor[m]] + ...
             cAttentioncTimbre[attentionFactor[m],TimbreFactor[m]] + cS[subjectFactor[m]]
 
     }
 
-    a0 ~ dnorm(0,0.001)
-	c0 ~ dnorm(0,0.001);
+    a0 ~ dnorm(0, 0.001)
+	c0 ~ dnorm(0, 0.001);
 
 
     # factor Attention
 		for (jAtt in 1:NumAttCond) {
 
-			aAttention[jAtt] ~ dnorm( 0.0 , a1tau)
-			cAttention[jAtt] ~ dnorm( 0.0 , c1tau)
+			aAttention[jAtt] ~ dnorm(0.0 , a1tau)
+			cAttention[jAtt] ~ dnorm(0.0 , c1tau)
 
-			tau_d[jAtt] <- pow(sigma_d,-2)
-			tau_c[jAtt] <- pow(sigma_c,-2)
+			tau_d[jAtt] <- pow(sigma_d, -2)
+			tau_c[jAtt] <- pow(sigma_c, -2)
 		}
 
-		sigma_d ~ dunif(0,4)
-		sigma_c ~ dunif(0,4)
+		sigma_d ~ dunif(0, 4)
+		sigma_c ~ dunif(0, 4)
 
-		a1tau <- 1 / pow(a1SD, 2 )
-		a1SD ~ dgamma(1.64,.32)
+		a1tau <- 1 / pow(a1D, 2)
+		a1SD ~ dgamma(1.64, .32)
 
 		c1tau <- 1 / pow(c1SD, 2)
-		c1SD ~ dgamma(1.64,.32)
+		c1SD ~ dgamma(1.64, .32)
 
 
     # factor Timbre
@@ -264,8 +265,8 @@ model {
 
 ```
 
-## DAG representation ##
-Experiment 2 DAG of Bayesian hierarchical model parameters, indicating modeling structure for d-prime. Bias is modelled equally to d-prime, only injecting bias values; for simplicity bias modelling is omitted from this graph.
+## DAG Representation ##
+Experiment 2 DAG of Bayesian hierarchical model parameters, indicating modeling structure for d-prime. Bias is modeled equally to d-prime, only injecting bias values; for simplicity bias modeling is omitted from this graph.
 
 ![Bayes-DAG](BayesianModel_DAG.png)
 Notation based on [Dietz](http://github.com/jluttine/tikz-bayesnet "http://github.com/jluttine/tikz-bayesnet") 2010. _Directed factor graph notation for generative models_. Max Planck Institute for Informatics, Tech. Rep.
@@ -282,15 +283,13 @@ mcmc_params.nthin = 1;
 mcmc_params.dic = 1;
 
 
-[JagsSample, JagStats] = matjags( ...
-    JagsParams, modelFilePath, mcmc_params.init0, 'doparallel' , ...
-    mcmc_params.doparallel, 'nchains', mcmc_params.nchains, ...
-    'nburnin', mcmc_params.nburnin,'nsamples', mcmc_params.nsamples, ...
-    'thin', mcmc_params.nthin, 'dic', mcmc_params.dic, ...
-    'monitorparams', JagsMonitparams, ...
-    'savejagsoutput' , 1 , 'verbosity' , 1 , 'cleanup' , 1 , ...
-    'workingdir', 'tmpjags');
+[JagsSample, JagStats] = matjags(JagsParams, modelFilePath, ...
+    mcmc_params.init0, 'doparallel' , mcmc_params.doparallel, 'nchains', ...
+    mcmc_params.nchains, 'nburnin', mcmc_params.nburnin, 'nsamples', ...
+    mcmc_params.nsamples, 'thin', mcmc_params.nthin, 'dic', mcmc_params.dic, ...
+    'monitorparams', JagsMonitparams, 'savejagsoutput', 1, 'verbosity', 1, ...
+    'cleanup' , 1, 'workingdir', 'tmpjags');
 
 ```
 
-**Niels R. Disbergen - Giancarlo Valente - 2016**
+**Niels R. Disbergen - Giancarlo Valente - 2018**
