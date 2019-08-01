@@ -1,13 +1,13 @@
 ### Bayesian modeling specifications for "Assessing top-down and bottom-up contributions to auditory stream segregation and integration with polyphonic music" by Niels R. Disbergen, Giancarlo Valente, Elia Formisano, and Robert Zatorre ###
 
-This documents is a supplement to the paper (forthcoming) and describes in more detail how the Bayesian model is implemented for the analysis of behavioral data. More general description and details as to why the model has been implemented this way can be found in the paper, a simplified DAG description of the model is presented below.
+This document is a supplement to our [Frontiers paper]( https://www.frontiersin.org/articles/10.3389/fnins.2018.00121 "Frontiers Paper Webpage"), describing in more detail how the Bayesian model was implemented for the analysis of behavioral data. More general description and details as to why the model has been implemented this way can be found in the paper, a simplified DAG description of the model is presented below.
 
 Bayesian Hierarchical models with Markov Chain Monte Carlo (MCMC) inference were estimated using [JAGS](http://mcmc-jags.sourceforge.net/ "http://mcmc-jags.sourceforge.net/") (Just Another Gibbs Sampler, version 3.3.0) employing the [MATJAGS](http://psiexp.ss.uci.edu/research/programs_data/jags/ "http://psiexp.ss.uci.edu/research/programs_data/jags/") (version 1.3.1) interface in MATLAB 2015a.
 
 Participant responses were classified as hits, misses, false alarms, and correct rejections.
 In Experiment 1 three responses per subject (attentive conditions) for twenty nine participants were injected in the model, a total of eighty seven measurements (nMeasures). For experiment 2 there were nine responses recorded per participant: three attentive conditions with three timbre distances each. Nineteen subjects with nine measurements each, a total of hundred seventy one measurements.
 
-Implementation for bias model parameters is identical, only feeding biasEdgeCorrected for model initiation values as opposed to dPrimeEdgeCorrected.
+Implementation for bias model parameters was identical, only feeding biasEdgeCorrected for model initiation values as opposed to dPrimeEdgeCorrected.
 
 For more information, see also "[Doing Bayesian Data Analysis](https://sites.google.com/site/doingbayesiandataanalysis/ "https://sites.google.com/site/doingbayesiandataanalysis/")" from John R. Kruschke.
 
